@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="WeekCalendarCell" id="gTV-IL-0wX" customClass="WeekCalendarCell">
+            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bJx-OH-zue">
+                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EEk-rn-i76">
+                        <rect key="frame" x="49" y="0.0" width="1" height="50"/>
+                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="1" id="AdK-fc-IKv"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            </view>
+            <constraints>
+                <constraint firstItem="bJx-OH-zue" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="2G7-i2-SIN"/>
+                <constraint firstAttribute="bottom" secondItem="bJx-OH-zue" secondAttribute="bottom" id="Glk-dd-1Be"/>
+                <constraint firstAttribute="trailing" secondItem="bJx-OH-zue" secondAttribute="trailing" id="MTg-Cs-ZbV"/>
+                <constraint firstItem="EEk-rn-i76" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="Tkm-qb-4Xr"/>
+                <constraint firstItem="bJx-OH-zue" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="XIO-6K-6RO"/>
+                <constraint firstAttribute="bottom" secondItem="EEk-rn-i76" secondAttribute="bottom" id="eOA-sv-xcP"/>
+                <constraint firstAttribute="trailing" secondItem="EEk-rn-i76" secondAttribute="trailing" id="som-aw-lys"/>
+            </constraints>
+            <connections>
+                <outlet property="labTitle" destination="bJx-OH-zue" id="uP9-UD-KLb"/>
+                <outlet property="lineView" destination="EEk-rn-i76" id="Mea-Ud-tCx"/>
+                <outlet property="lineWidthConstraint" destination="AdK-fc-IKv" id="yxB-PQ-6sg"/>
+            </connections>
+        </collectionViewCell>
+    </objects>
+</document>
