@@ -11,6 +11,6 @@
 @interface WeekCalendarCell : UICollectionViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *labTitle;
-
+@property (weak, nonatomic) IBOutlet UILabel *labPoint;
 
 @end

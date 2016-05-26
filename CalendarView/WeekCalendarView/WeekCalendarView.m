@@ -13,6 +13,7 @@
 #define TopH    40.0
 #define MidH    30.0
 #define BottomH TopH
+#define DateFormatter @"yyyy-MM-dd"
 
 @interface WeekCalendarView () <UICollectionViewDataSource, UICollectionViewDelegate>
 
@@ -22,6 +23,8 @@
 @property (nonatomic, strong) UIButton *currentWeekBtn;
 @property (nonatomic, strong) UIButton *nextWeekBtn;
 
+/**上下周、本周父视图*/
+@property (nonatomic, strong) UIView *topRightView;
 /**周一~周日标签父视图*/
 @property (nonatomic, strong) UIView *weekView;
 
@@ -32,7 +35,7 @@
 /**当前显示周第一天date，以每周的周一为第一天*/
 @property (nonatomic, strong) NSDate *nowWeekMonday;
 /**当前显示周数组*/
-@property (nonatomic, strong) NSMutableArray *arrNowWeekDays;
+@property (nonatomic, strong) NSMutableArray<NSDate *> *arrNowWeekDays;
 /**当前选中日期*/
 @property (nonatomic, strong) NSDate *selectDate;
 /**当前选中日期的day*/
@@ -75,6 +78,12 @@
     return _arrNowWeekDays;
 }
 
+- (void)setDicRedPointState:(NSDictionary *)dicRedPointState
+{
+    _dicRedPointState = dicRedPointState;
+    [self.collectionView reloadData];
+}
+
 - (NSCalendar *)calendar
 {
     if (!_calendar) {
@@ -111,16 +120,27 @@
         _indicatorLabel.alpha = 0.4;
         _indicatorLabel.layer.cornerRadius = BottomH/2;
         _indicatorLabel.layer.masksToBounds = YES;
+        if (!self.showIndicator) {
+            _indicatorLabel.hidden = YES;
+        }
         [self addSubview:_indicatorLabel];
     }
     return _indicatorLabel;
 }
 
-- (void)willMoveToSuperview:(UIView *)newSuperview
+- (void)setHideToggleBtns:(BOOL)hideToggleBtns
 {
-    [super willMoveToSuperview:newSuperview];
+    _hideToggleBtns = hideToggleBtns;
+    if (hideToggleBtns) {
+        self.topRightView.hidden = YES;
+    }
+}
+
+- (void)setFirstShowNextWeek:(BOOL)firstShowNextWeek
+{
+    _firstShowNextWeek = firstShowNextWeek;
     //获取数据源
-    if (self.firstShowNextWeek) {
+    if (firstShowNextWeek) {
         [self getNextWeekDays];
     } else {
         [self getNowWeekDays];
@@ -139,14 +159,14 @@
     
     //当前年月label
     self.currentDateLabel = [[UILabel alloc] init];
-    self.currentDateLabel.text = [DateTimeUtils getDateTimeNowWithFormat:@"yyyy年MM月"];
+    self.currentDateLabel.text = [DateTimeUtils getDateTimeNowWithFormat:DateFormatter];
     self.currentDateLabel.font = [UIFont systemFontOfSize:16];
     self.currentDateLabel.textAlignment = NSTextAlignmentCenter;
     self.currentDateLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:self.currentDateLabel];
     //右边上下周、本周父视图view
-    UIView *topRightView = [self getTopRightView];
-    [self addSubview:topRightView];
+    [self initTopRightView];
+    [self addSubview:self.topRightView];
     //周一~周日标签view
     self.weekView = [[UIView alloc] init];
     self.weekView.backgroundColor = [UIColor lightGrayColor];
@@ -157,7 +177,7 @@
     [self addSubview:self.collectionView];
     
     NSDictionary *viewDic = @{@"curDateLabel" : self.currentDateLabel,
-                              @"trView" : topRightView,
+                              @"trView" : self.topRightView,
                               @"weekView" : self.weekView,
                               @"colView" : self.collectionView};
     NSDictionary *metrics = @{@"topH" : @(TopH),
@@ -173,10 +193,10 @@
     [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[colView]|" options:0 metrics:nil views:viewDic]];
 }
 
-- (UIView *)getTopRightView
+- (void)initTopRightView
 {
-    UIView *topRightView = [[UIView alloc] init];
-    topRightView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.topRightView = [[UIView alloc] init];
+    self.topRightView.translatesAutoresizingMaskIntoConstraints = NO;
     
     //上一周按钮
     self.previousWeekBtn = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -185,7 +205,7 @@
     [self.previousWeekBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     self.previousWeekBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [self.previousWeekBtn addTarget:self action:@selector(previousWeekBtnClick) forControlEvents:UIControlEventTouchUpInside];
-    [topRightView addSubview:self.previousWeekBtn];
+    [self.topRightView addSubview:self.previousWeekBtn];
     //下一周按钮
     self.nextWeekBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     self.nextWeekBtn.titleLabel.font = [UIFont systemFontOfSize:14];
@@ -193,7 +213,7 @@
     [self.nextWeekBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     self.nextWeekBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [self.nextWeekBtn addTarget:self action:@selector(nextWeekBtnClick) forControlEvents:UIControlEventTouchUpInside];
-    [topRightView addSubview:self.nextWeekBtn];
+    [self.topRightView addSubview:self.nextWeekBtn];
     //本周按钮
     self.currentWeekBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     self.currentWeekBtn.titleLabel.font = [UIFont systemFontOfSize:14];
@@ -201,20 +221,20 @@
     [self.currentWeekBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     self.currentWeekBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [self.currentWeekBtn addTarget:self action:@selector(currentWeekBtnClick) forControlEvents:UIControlEventTouchUpInside];
-    [topRightView addSubview:self.currentWeekBtn];
+    [self.topRightView addSubview:self.currentWeekBtn];
     
     NSDictionary *viewDic = @{@"preBtn" : self.previousWeekBtn,
                               @"nextBtn" : self.nextWeekBtn,
                               @"currentBtn" : self.currentWeekBtn};
     NSDictionary *metrics = @{@"btnWidth" : @(75)};
-    [topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-5-[preBtn]-5-|" options:0 metrics:nil views:viewDic]];
-    [topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[preBtn(==btnWidth)]" options:0 metrics:metrics views:viewDic]];
-    [topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-5-[nextBtn]-5-|" options:0 metrics:nil views:viewDic]];
-    [topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[nextBtn(==btnWidth)]|" options:0 metrics:metrics views:viewDic]];
+    [self.topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-5-[preBtn]-5-|" options:0 metrics:nil views:viewDic]];
+    [self.topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[preBtn(==btnWidth)]" options:0 metrics:metrics views:viewDic]];
+    [self.topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-5-[nextBtn]-5-|" options:0 metrics:nil views:viewDic]];
+    [self.topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[nextBtn(==btnWidth)]|" options:0 metrics:metrics views:viewDic]];
     
-    [topRightView addConstraint:[NSLayoutConstraint constraintWithItem:self.currentWeekBtn attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:topRightView attribute:NSLayoutAttributeCenterY multiplier:1.0f constant:0]];
-    [topRightView addConstraint:[NSLayoutConstraint constraintWithItem:self.currentWeekBtn attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:topRightView attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0]];
-    [topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[currentBtn(==40)]" options:0 metrics:nil views:viewDic]];
+    [self.topRightView addConstraint:[NSLayoutConstraint constraintWithItem:self.currentWeekBtn attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:self.topRightView attribute:NSLayoutAttributeCenterY multiplier:1.0f constant:0]];
+    [self.topRightView addConstraint:[NSLayoutConstraint constraintWithItem:self.currentWeekBtn attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:self.topRightView attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0]];
+    [self.topRightView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[currentBtn(==40)]" options:0 metrics:nil views:viewDic]];
     
     self.previousWeekBtn.layer.borderColor = [UIColor lightGrayColor].CGColor;
     self.previousWeekBtn.layer.borderWidth = 0.5;
@@ -222,8 +242,6 @@
     self.nextWeekBtn.layer.borderWidth = 0.5;
     self.currentWeekBtn.layer.borderColor = [UIColor lightGrayColor].CGColor;
     self.currentWeekBtn.layer.borderWidth = 0.5;
-    
-    return topRightView;
 }
 
 - (void)initCollectionView
@@ -259,17 +277,17 @@
     UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionView.collectionViewLayout;
     layout.itemSize = CGSizeMake(self.frame.size.width/7, BottomH);
     if (self.weekView.subviews.count == 0) {
-        NSArray *weekArr = @[@"周一", @"周二", @"周三", @"周四", @"周五", @"周六", @"周日"];
+        NSArray *weekArr = @[@"一", @"二", @"三", @"四", @"五", @"六", @"日"];
         UILabel *preLbl = nil;
         CGFloat weekMargin = 15;
         NSString *firstStr = weekArr[0];
-        CGRect strRect = [firstStr boundingRectWithSize:CGSizeMake(FLT_MAX, 30) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:nil context:nil];
+        CGRect strRect = [firstStr boundingRectWithSize:CGSizeMake(FLT_MAX, 30) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:14]} context:nil];
         CGFloat itemCount = (CGFloat)weekArr.count;
         CGFloat weekGap = (self.bounds.size.width-2*weekMargin-itemCount*strRect.size.width)/(itemCount-1);
         for (int i = 0; i < weekArr.count ; i++) {
             UILabel *lbl = [[UILabel alloc] init];
             lbl.translatesAutoresizingMaskIntoConstraints = NO;
-            lbl.font = [UIFont systemFontOfSize:12.0f];
+            lbl.font = [UIFont systemFontOfSize:14.0f];
             lbl.text = weekArr[i];
             lbl.textColor = [UIColor blackColor];
             [lbl sizeToFit];
@@ -287,7 +305,7 @@
 
 - (void)updateCurrentDateLabelText
 {
-    self.currentDateLabel.text = [DateTimeUtils getFormatWithDate:self.selectDate formatter:@"yyyy年MM月"];
+    self.currentDateLabel.text = [DateTimeUtils getFormatWithDate:self.selectDate formatter:@"yyyy-MM-dd"];
 }
 
 #pragma mark - btn action
@@ -298,6 +316,10 @@
     [self.collectionView.layer addAnimation:[self addAnimationWithType:@"pageUnCurl" duration:0.4] forKey:nil];
     [self.collectionView reloadData];
     [self updateCurrentDateLabelText];
+    //回调
+    if (self.delegate && [self.delegate respondsToSelector:@selector(weekCalendarViewChangeToPreviousWeek:)]) {
+        [self.delegate weekCalendarViewChangeToPreviousWeek:self.arrNowWeekDays.copy];
+    }
 }
 
 - (void)nextWeekBtnClick
@@ -307,6 +329,10 @@
     [self.collectionView.layer addAnimation:[self addAnimationWithType:@"pageCurl" duration:0.4] forKey:nil];
     [self.collectionView reloadData];
     [self updateCurrentDateLabelText];
+    //回调
+    if (self.delegate && [self.delegate respondsToSelector:@selector(weekCalendarViewChangeToNextWeek:)]) {
+        [self.delegate weekCalendarViewChangeToNextWeek:self.arrNowWeekDays.copy];
+    }
 }
 
 - (void)currentWeekBtnClick
@@ -315,6 +341,10 @@
     [self getNowWeekDays];
     [self.collectionView reloadData];
     [self updateCurrentDateLabelText];
+    //回调
+    if (self.delegate && [self.delegate respondsToSelector:@selector(weekCalendarViewChangeToCurrentWeek:)]) {
+        [self.delegate weekCalendarViewChangeToCurrentWeek:self.arrNowWeekDays.copy];
+    }
 }
 
 - (void)swipeAction:(UISwipeGestureRecognizer *)swipe
@@ -344,9 +374,9 @@
     _nowWeekMonday = nil;
     [self getAllWeekDays];
     //获取当前周的便不能直接默认选择当前周周一，这里要默认选择当天
-    NSDateComponents *components = [self.calendar components:NSCalendarUnitDay fromDate:[NSDate date]];
-    self.selectDay = components.day;
     self.selectDate = [NSDate date];
+    NSDateComponents *components = [self.calendar components:NSCalendarUnitDay fromDate:self.selectDate];
+    self.selectDay = components.day;
 }
 
 /**获取上周*/
@@ -365,7 +395,6 @@
 
 - (void)getAllWeekDays
 {
-    NSLog(@"华丽的分割线");
     [self.arrNowWeekDays removeAllObjects];
     
     NSDateComponents *components = [self.calendar components:NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay fromDate:self.nowWeekMonday];
@@ -374,7 +403,6 @@
     for (int i = 0; i < 7; i++) {
         components.day += i;
         NSDate *date = [self.calendar dateFromComponents:components];
-        NSLog(@"%@", [DateTimeUtils getDateTimeWithDate:date]);
         [self.arrNowWeekDays addObject:date];
         components.day -= i;
     }
@@ -404,7 +432,7 @@
     NSDateComponents *com = [self.calendar components:NSCalendarUnitDay fromDate:self.arrNowWeekDays[indexPath.row]];
     cell.labTitle.text = [NSString stringWithFormat:@"%ld", com.day];
     if (com.day == self.selectDay) {
-        cell.labTitle.textColor = [UIColor brownColor];
+        cell.labTitle.textColor = [UIColor colorWithRed:0/255.0 green:112/255.0 blue:192/255.0 alpha:1];
         CGRect convertRect = [self.collectionView convertRect:cell.frame toView:self];
         __weak typeof(self) weakSelf = self;
         [UIView animateWithDuration:0.3 animations:^{
@@ -413,6 +441,14 @@
         }];
     } else {
         cell.labTitle.textColor = [UIColor blackColor];
+    }
+    
+    if (!self.dicRedPointState) {
+        cell.labPoint.hidden = YES;
+    } else if ([self.dicRedPointState[[NSString stringWithFormat:@"%ld", com.day]] integerValue] == CalendarRedPointStateShow) {
+        cell.labPoint.hidden = NO;
+    } else if ([self.dicRedPointState[[NSString stringWithFormat:@"%ld", com.day]] integerValue] == CalendarRedPointStateHide) {
+        cell.labPoint.hidden = YES;
     }
     
     if (!cell.selectedBackgroundView) {
@@ -426,14 +462,20 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
     WeekCalendarCell *cell = (WeekCalendarCell *)[collectionView cellForItemAtIndexPath:indexPath];
     self.selectDate = self.arrNowWeekDays[indexPath.row];
     self.selectDay = cell.labTitle.text.integerValue;
     [self.collectionView reloadData];
     [self updateCurrentDateLabelText];
     //回调
-    if (self.completion) self.completion(self.selectDate);
+    if (self.delegate && [self.delegate respondsToSelector:@selector(weekCalendarViewClickDate:)]) {
+        [self.delegate weekCalendarViewClickDate:self.selectDate];
+    }
+}
+
+- (NSArray<NSDate *> *)getNowShowWeekdays
+{
+    return self.arrNowWeekDays.copy;
 }
 
 /*

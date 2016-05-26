@@ -19,6 +19,8 @@
 
 - (void)awakeFromNib {
     [self.lineWidthConstraint setConstant:0.5];
+    self.labPoint.layer.masksToBounds = YES;
+    self.labPoint.layer.cornerRadius = 3.0f;
 }
 
 @end

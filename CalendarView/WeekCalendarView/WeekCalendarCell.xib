@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10117" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -26,11 +26,23 @@
                             <constraint firstAttribute="width" constant="1" id="AdK-fc-IKv"/>
                         </constraints>
                     </view>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="upn-rv-Uku">
+                        <rect key="frame" x="40" y="10" width="6" height="6"/>
+                        <color key="backgroundColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="6" id="PrY-gE-51A"/>
+                            <constraint firstAttribute="height" constant="6" id="uTC-qK-igc"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             </view>
             <constraints>
+                <constraint firstItem="upn-rv-Uku" firstAttribute="centerY" secondItem="gTV-IL-0wX" secondAttribute="centerY" constant="-12" id="17B-47-HVN"/>
                 <constraint firstItem="bJx-OH-zue" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="2G7-i2-SIN"/>
+                <constraint firstItem="EEk-rn-i76" firstAttribute="leading" secondItem="upn-rv-Uku" secondAttribute="trailing" constant="3" id="8qd-YZ-TKi"/>
                 <constraint firstAttribute="bottom" secondItem="bJx-OH-zue" secondAttribute="bottom" id="Glk-dd-1Be"/>
                 <constraint firstAttribute="trailing" secondItem="bJx-OH-zue" secondAttribute="trailing" id="MTg-Cs-ZbV"/>
                 <constraint firstItem="EEk-rn-i76" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="Tkm-qb-4Xr"/>
@@ -39,6 +51,7 @@
                 <constraint firstAttribute="trailing" secondItem="EEk-rn-i76" secondAttribute="trailing" id="som-aw-lys"/>
             </constraints>
             <connections>
+                <outlet property="labPoint" destination="upn-rv-Uku" id="SDN-4w-d1y"/>
                 <outlet property="labTitle" destination="bJx-OH-zue" id="uP9-UD-KLb"/>
                 <outlet property="lineView" destination="EEk-rn-i76" id="Mea-Ud-tCx"/>
                 <outlet property="lineWidthConstraint" destination="AdK-fc-IKv" id="yxB-PQ-6sg"/>
