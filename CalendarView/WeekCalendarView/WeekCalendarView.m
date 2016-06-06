@@ -142,6 +142,7 @@
     //获取数据源
     if (firstShowNextWeek) {
         [self getNextWeekDays];
+        [self updateCurrentDateLabelText];
     } else {
         [self getNowWeekDays];
     }
